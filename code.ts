@@ -35,7 +35,11 @@ if (figma.editorType === "figma") {
     'не', 
     'уже', 
     'еще', 
-    'все'
+    'все',
+    'он',
+    'она',
+    'оно',
+    'они',
   ];
 
   async function setNbspAfterWords () {
@@ -63,6 +67,10 @@ if (figma.editorType === "figma") {
   }
   
   setNbspAfterWords().then(() => {
+
+    // Show that plugin ran successfully
+    figma.notify('✅ Проставил неразрывные пробелы')
+
     // Make sure to close the plugin when you're done. Otherwise the plugin will
     // keep running, which shows the cancel button at the bottom of the screen.
     figma.closePlugin();
