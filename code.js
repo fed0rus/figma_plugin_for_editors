@@ -48,12 +48,20 @@ if (figma.editorType === "figma") {
                     .map(figma.loadFontAsync));
                 // Update nbsp for each word in nbspAfterWords
                 for (var i = 0; i < nbspAfterWords.length; i++) {
+                    // Check the word with 2 spaces around
                     var word = ' ' + nbspAfterWords[i] + ' ';
                     var wordStartIndex = node.characters.indexOf(word);
                     if (wordStartIndex != -1) {
                         console.log(word);
                         node.deleteCharacters(wordStartIndex + word.length - 1, wordStartIndex + word.length);
                         node.insertCharacters(wordStartIndex + word.length - 1, ' ');
+                    }
+                    var wordWithNbspBefore = ' ' + nbspAfterWords[i] + ' ';
+                    var wordWithNbspBeforeStartIndex = node.characters.indexOf(wordWithNbspBefore);
+                    if (wordWithNbspBeforeStartIndex != -1) {
+                        console.log(wordWithNbspBefore);
+                        node.deleteCharacters(wordWithNbspBeforeStartIndex + word.length - 1, wordWithNbspBeforeStartIndex + word.length);
+                        node.insertCharacters(wordWithNbspBeforeStartIndex + word.length - 1, ' ');
                     }
                 }
             }
