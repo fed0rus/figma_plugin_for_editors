@@ -57,7 +57,7 @@ if (figma.editorType === "figma") {
 
           // Check the word with 2 spaces around
           var word = ' ' + nbspAfterWords[i] + ' '
-          var wordStartIndex = node.characters.indexOf(word)
+          var wordStartIndex = node.characters.toLowerCase().indexOf(word)
           if (wordStartIndex != -1) {
             console.log(word)
             node.deleteCharacters(wordStartIndex + word.length - 1, wordStartIndex + word.length)
@@ -66,7 +66,7 @@ if (figma.editorType === "figma") {
           
           // Check the word with 1 nbsp before and 1 space after it
           var wordWithNbspBefore = ' ' + nbspAfterWords[i] + ' '
-          var wordWithNbspBeforeStartIndex = node.characters.indexOf(wordWithNbspBefore)
+          var wordWithNbspBeforeStartIndex = node.characters.toLowerCase().indexOf(wordWithNbspBefore)
           if (wordWithNbspBeforeStartIndex != -1) {
             console.log(wordWithNbspBefore)
             node.deleteCharacters(wordWithNbspBeforeStartIndex + word.length - 1, wordWithNbspBeforeStartIndex + word.length)
