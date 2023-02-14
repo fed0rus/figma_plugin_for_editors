@@ -56,6 +56,7 @@ if (figma.editorType === "figma") {
                         node.deleteCharacters(wordStartIndex + word.length - 1, wordStartIndex + word.length);
                         node.insertCharacters(wordStartIndex + word.length - 1, ' ');
                     }
+                    // Check the word with 1 nbsp before and 1 space after it
                     var wordWithNbspBefore = ' ' + nbspAfterWords[i] + ' ';
                     var wordWithNbspBeforeStartIndex = node.characters.indexOf(wordWithNbspBefore);
                     if (wordWithNbspBeforeStartIndex != -1) {
