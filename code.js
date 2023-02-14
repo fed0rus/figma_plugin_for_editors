@@ -52,7 +52,6 @@ async function setNbspAfterWords() {
             for (const rawWord of splitWords) {
                 // Remove ',' and ';' from the word
                 var cleanWord = rawWord.replace(/[,;]/g, '');
-                console.log(cleanWord);
                 // Add the word to the final string. If it's in a set, add &nbsp, otherwise a regular space
                 finalString += rawWord + ((nbspAfterWords.has(cleanWord.toLowerCase()) ? ' ' : ' '));
             }
