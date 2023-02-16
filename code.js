@@ -1,27 +1,4 @@
 "use strict";
-// Prepare nodes — all selected, including nested, visible TextLayers
-// This set contains node types that support nested search. Check the "Supported on" section of https://www.figma.com/plugin-docs/api/properties/nodes-findallwithcriteria
-const nestedSearchSupportedTypes = new Set(["BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET", "FRAME", "GROUP", "INSTANCE", "SECTION"]);
-const selectedNodes = figma.currentPage.selection;
-var selectedTextNodesProbablyInvisible = new Array();
-for (const node of selectedNodes) {
-    if (node.type == 'TEXT') {
-        selectedTextNodesProbablyInvisible.push(node);
-    }
-    else if (nestedSearchSupportedTypes.has(node.type)) {
-        // @ts-ignore because we already ensured 'node' has narrowed down to one of types that has method 'findAllWithCriteria'
-        selectedTextNodesProbablyInvisible = selectedTextNodesProbablyInvisible.concat(node.findAllWithCriteria({
-            types: ['TEXT']
-        }));
-    }
-}
-// Leave only visible text nodes
-var selectedTextNodesVisible = new Array();
-for (const node of selectedTextNodesProbablyInvisible) {
-    if (node.visible) {
-        selectedTextNodesVisible.push(node);
-    }
-}
 // Sets of words
 let nbspAfterWords = new Set([
     'в',
@@ -61,11 +38,43 @@ let nbspAfterWords = new Set([
     'оно',
     'они',
 ]);
-async function setNbspAfterWords() {
-    for (const node of selectedTextNodesVisible) {
-        // Load fonts so we can change text layer value
+// This function returns a list of text nodes that are in current selection (including nested nodes) and are visible
+function getOperableTextNodes() {
+    // This set contains node types that support nested search. Check the "Supported on" section of https://www.figma.com/plugin-docs/api/properties/nodes-findallwithcriteria
+    const nestedSearchSupportedTypes = new Set(["BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET", "FRAME", "GROUP", "INSTANCE", "SECTION"]);
+    const selectedNodes = figma.currentPage.selection;
+    var selectedTextNodesProbablyInvisible = new Array();
+    // Find all nested text layers of the current selection and add them to 'selectedTextNodesProbablyInvisible'
+    for (const node of selectedNodes) {
+        if (node.type == 'TEXT') {
+            selectedTextNodesProbablyInvisible.push(node);
+        }
+        else if (nestedSearchSupportedTypes.has(node.type)) {
+            // @ts-ignore because we already ensured 'node' has narrowed down to one of types that has method 'findAllWithCriteria'
+            selectedTextNodesProbablyInvisible = selectedTextNodesProbablyInvisible.concat(node.findAllWithCriteria({
+                types: ['TEXT']
+            }));
+        }
+    }
+    // Leave only visible text nodes
+    var selectedTextNodesVisible = new Array();
+    for (const node of selectedTextNodesProbablyInvisible) {
+        if (node.visible) {
+            selectedTextNodesVisible.push(node);
+        }
+    }
+    // Return operable text nodes
+    return selectedTextNodesVisible;
+}
+// Load fonts so we can change text layer value
+async function loadFontsForTextNodes(textNodes) {
+    for (const node of textNodes) {
         await Promise.all(node.getRangeAllFontNames(0, node.characters.length)
             .map(figma.loadFontAsync));
+    }
+}
+function setNbspAfterWords(textNodes) {
+    for (const node of textNodes) {
         // Prepare words of TextLayer and final string
         var finalString = '';
         var splitWords = node.characters.split(/ +/);
@@ -80,10 +89,19 @@ async function setNbspAfterWords() {
         node.characters = finalString.trim();
     }
 }
-// Update &nbsp after words and close plugin after this
-setNbspAfterWords().then(() => {
-    // Show that plugin ran successfully
-    figma.notify('✅ Проставил неразрывные пробелы');
-    // Close plugin
-    figma.closePlugin();
-});
+// Main function that will groom text
+function groomText() {
+    // Get a list of operable text nodes
+    const textNodes = getOperableTextNodes();
+    // Load fonts for the text nodes. Inside do whatever grooming you want
+    loadFontsForTextNodes(textNodes).then(() => {
+        // Set &nbsp after words of 'nbspAfterWords' list
+        setNbspAfterWords(textNodes);
+        // Show that plugin ran successfully
+        figma.notify('✅ Проставил неразрывные пробелы');
+        // Close plugin
+        figma.closePlugin();
+    });
+}
+// Main call
+groomText();
