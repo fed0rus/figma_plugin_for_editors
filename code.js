@@ -98,7 +98,7 @@ function groomText() {
         // Set &nbsp after words of 'nbspAfterWords' list
         setNbspAfterWords(textNodes);
         // Show that plugin ran successfully
-        figma.notify('✅ Проставил неразрывные пробелы');
+        figma.notify('✅ Причесал выделение');
         // Close plugin
         figma.closePlugin();
     });
