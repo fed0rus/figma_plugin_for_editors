@@ -65,8 +65,8 @@ async function setNbspAfterWords () {
         finalString += rawWord + ((nbspAfterWords.has(cleanWord.toLowerCase()) ? ' ' : ' '));
       }
 
-      // Replace initial text with modified
-      node.characters = finalString;
+      // Replace initial text with modified. Also, remove spaces around string
+      node.characters = finalString.trim();
     }
   }
 }
