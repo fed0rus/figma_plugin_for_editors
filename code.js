@@ -47,7 +47,7 @@ async function setNbspAfterWords() {
                 .map(figma.loadFontAsync));
             // Prepare words of TextLayer and final string
             var finalString = '';
-            var splitWords = node.characters.split(/ | /);
+            var splitWords = node.characters.split(/ +/);
             // Handle every word in TextLayer
             for (const rawWord of splitWords) {
                 // Remove ',' and ';' from the word
