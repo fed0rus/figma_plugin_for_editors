@@ -55,6 +55,7 @@ let nbspAfterWords = new Set<string>([
   'три',
   'его',
   'ее',
+  'их',
   'зал',
   'иск',
   'имя',
