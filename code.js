@@ -10,6 +10,7 @@ let nbspAfterWords = new Set([
     'над',
     'по',
     'из',
+    'из-за',
     'у',
     'около',
     'под',
@@ -26,6 +27,8 @@ let nbspAfterWords = new Set([
     'и',
     'но',
     'или',
+    'что',
+    'чтобы',
     'я',
     'ты',
     'вы',
@@ -38,6 +41,42 @@ let nbspAfterWords = new Set([
     'она',
     'оно',
     'они',
+    'как',
+    'так',
+    'акт',
+    'бот',
+    'вне',
+    'вид',
+    'вес',
+    'год',
+    'где',
+    'дом',
+    'два',
+    'его',
+    'ее',
+    'зал',
+    'иск',
+    'имя',
+    'код',
+    'который',
+    'которая',
+    'которое',
+    'которые',
+    'мой',
+    'нет',
+    'наш',
+    'оба',
+    'пол',
+    'ряд',
+    'там',
+    'тут',
+    'чем',
+    'чек',
+    'чей',
+    'чья',
+    'чье',
+    'щит',
+    'это',
 ]);
 // This function returns a list of text nodes that are in current selection (including nested nodes) and are visible
 function getOperableTextNodes() {
@@ -99,7 +138,7 @@ function groomText() {
         // Set &nbsp after words of 'nbspAfterWords' list
         setNbspAfterWords(textNodes);
         // Show that plugin ran successfully
-        figma.notify('✅ Причесал выделение');
+        figma.notify('✨ Причесано ✨');
         // Close plugin
         figma.closePlugin();
     });
