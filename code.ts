@@ -1,85 +1,120 @@
-// Sets of words
-let nbspAfterWords = new Set<string>([
+// Word groups that need &nbsp after them
+const groupPrepositions = new Set<string> ([
   'в',
   'без',
   'до',
   'для',
   'за',
-  'через', 
-  'над', 
-  'по', 
+  'через',
+  'над',
+  'по',
   'из',
   'из-за',
-  'у', 
-  'около', 
-  'под', 
-  'о', 
-  'про', 
-  'на', 
-  'к', 
-  'перед', 
-  'при', 
+  'у',
+  'около',
+  'под',
+  'о',
+  'про',
+  'на',
+  'к',
+  'перед',
+  'при',
   'с',
-  'со', 
+  'со',
   'между',
+]);
+const groupConjunctions = new Set<string> ([
   'а',
   'и',
   'но',
   'или',
   'что',
   'чтобы',
+]);
+const groupPronouns = new Set<string> ([
   'я',
   'ты',
   'вы', 
-  'мы', 
-  'не', 
-  'уже', 
-  'еще', 
-  'все',
+  'мы',
   'он',
   'она',
   'оно',
   'они',
-  'как',
-  'так',
-  'акт',
-  'бот',
-  'вне',
-  'вид',
-  'вес',
-  'год',
-  'где',
-  'дом',
-  'один',
-  'два',
-  'три',
+  'все',
   'его',
   'ее',
   'их',
-  'зал',
-  'иск',
-  'имя',
-  'код',
   'который',
   'которая',
   'которое',
   'которые',
   'мой',
-  'нет',
   'наш',
-  'оба',
-  'пол',
-  'ряд',
-  'там',
-  'тут',
   'чем',
-  'чек',
   'чей',
   'чья',
   'чье',
-  'щит',
   'это',
 ]);
+const groupNegativeParticles = new Set<string> ([
+  'не',
+  'нет',
+]);
+const groupAdverbs = new Set<string> ([
+  'уже',
+  'еще',
+  'как',
+  'так',
+  'вне',
+  'где',
+  'там',
+  'тут',
+]);
+const groupNumerals = new Set<string> ([
+  'один',
+  'два',
+  'три',
+  'оба',
+]);
+const groupShortWords = new Set<string>([
+  'акт',
+  'бот',
+  'вид',
+  'вес',
+  'год',
+  'дом',
+  'зал',
+  'иск',
+  'имя',
+  'код',
+  'пол',
+  'ряд',
+  'чек',
+  'щит',
+]);
+// Assemble all word groups, that need &nbsp after them, into one set
+const nbspAfterWords = new Set([
+  ...groupPrepositions,
+  ...groupConjunctions,
+  ...groupPronouns,
+  ...groupNegativeParticles,
+  ...groupAdverbs,
+  ...groupNumerals,
+  ...groupShortWords,
+]);
+
+
+// Word groups that need &nbsp before them
+const groupParticles = new Set<string> ([
+  'бы',
+  'ли',
+  'же',
+]);
+// Assemble all word groups, that need &nbsp before them, into one set
+const nbspBeforeWords = new Set([
+  ...groupParticles,
+]);
+
 
 
 // This function returns a list of text nodes that are in current selection (including nested nodes) and are visible

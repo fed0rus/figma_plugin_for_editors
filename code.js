@@ -1,6 +1,6 @@
 "use strict";
-// Sets of words
-let nbspAfterWords = new Set([
+// Word groups that need &nbsp after them
+const groupPrepositions = new Set([
     'в',
     'без',
     'до',
@@ -23,63 +23,95 @@ let nbspAfterWords = new Set([
     'с',
     'со',
     'между',
+]);
+const groupConjunctions = new Set([
     'а',
     'и',
     'но',
     'или',
     'что',
     'чтобы',
+]);
+const groupPronouns = new Set([
     'я',
     'ты',
     'вы',
     'мы',
-    'не',
-    'уже',
-    'еще',
-    'все',
     'он',
     'она',
     'оно',
     'они',
-    'как',
-    'так',
-    'акт',
-    'бот',
-    'вне',
-    'вид',
-    'вес',
-    'год',
-    'где',
-    'дом',
-    'один',
-    'два',
-    'три',
+    'все',
     'его',
     'ее',
     'их',
-    'зал',
-    'иск',
-    'имя',
-    'код',
     'который',
     'которая',
     'которое',
     'которые',
     'мой',
-    'нет',
     'наш',
-    'оба',
-    'пол',
-    'ряд',
-    'там',
-    'тут',
     'чем',
-    'чек',
     'чей',
     'чья',
     'чье',
-    'щит',
     'это',
+]);
+const groupNegativeParticles = new Set([
+    'не',
+    'нет',
+]);
+const groupAdverbs = new Set([
+    'уже',
+    'еще',
+    'как',
+    'так',
+    'вне',
+    'где',
+    'там',
+    'тут',
+]);
+const groupNumerals = new Set([
+    'один',
+    'два',
+    'три',
+    'оба',
+]);
+const groupShortWords = new Set([
+    'акт',
+    'бот',
+    'вид',
+    'вес',
+    'год',
+    'дом',
+    'зал',
+    'иск',
+    'имя',
+    'код',
+    'пол',
+    'ряд',
+    'чек',
+    'щит',
+]);
+// Assemble all word groups, that need &nbsp after them, into one set
+const nbspAfterWords = new Set([
+    ...groupPrepositions,
+    ...groupConjunctions,
+    ...groupPronouns,
+    ...groupNegativeParticles,
+    ...groupAdverbs,
+    ...groupNumerals,
+    ...groupShortWords,
+]);
+// Word groups that need &nbsp before them
+const groupParticles = new Set([
+    'бы',
+    'ли',
+    'же',
+]);
+// Assemble all word groups, that need &nbsp before them, into one set
+const nbspBeforeWords = new Set([
+    ...groupParticles,
 ]);
 // This function returns a list of text nodes that are in current selection (including nested nodes) and are visible
 function getOperableTextNodes() {
