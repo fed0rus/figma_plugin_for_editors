@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "ES2022",
     "target": "ESNext",
-    "lib": ["es6"],
+    "lib": [
+      "es6",
+      "ES2021.String"
+    ],
     "strict": true,
     "typeRoots": [
       "./node_modules/@types",
