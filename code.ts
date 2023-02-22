@@ -193,6 +193,11 @@ function groomText () {
     // Set &nbsp after words of 'nbspAfterWords' list
     setNbspAfterWords(textNodes);
 
+    // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
+    for (const node of textNodes) {
+      node.characters = node.characters.replaceAll(/[  ][-—)][ ]/g, ' — ');
+    }
+
     // Show that plugin ran successfully
     figma.notify('Причесано')
 
