@@ -44,10 +44,6 @@ const groupPronouns = new Set<string> ([
   'его',
   'ее',
   'их',
-  'который',
-  'которая',
-  'которое',
-  'которые',
   'мой',
   'наш',
   'чем',
@@ -198,7 +194,7 @@ function groomText () {
     setNbspAfterWords(textNodes);
 
     // Show that plugin ran successfully
-    figma.notify('✨ Причесано ✨')
+    figma.notify('Причесано')
 
     // Close plugin
     figma.closePlugin();
