@@ -160,6 +160,22 @@ function setNbspAfterWords(textNodes) {
         node.characters = finalString.trim();
     }
 }
+function setNbspBeforeWords(textNodes) {
+    for (const node of textNodes) {
+        // Prepare words of TextLayer and final string
+        var finalString = '';
+        var splitWords = node.characters.split(/ +/);
+        // Handle every word in TextLayer
+        for (const rawWord of splitWords) {
+            // Remove ',' and ';' from the word
+            var cleanWord = rawWord.replace(/[,;]/g, '');
+            // Add the word to the final string. If it's in a set, add &nbsp, otherwise a regular space
+            finalString += ((nbspBeforeWords.has(cleanWord.toLowerCase()) ? ' ' : ' ')) + rawWord;
+        }
+        // Replace initial text with modified. Also, remove spaces around string
+        node.characters = finalString.trim();
+    }
+}
 // Main function that will groom text
 function groomText() {
     // Get a list of operable text nodes
@@ -168,6 +184,8 @@ function groomText() {
     loadFontsForTextNodes(textNodes).then(() => {
         // Set &nbsp after words of 'nbspAfterWords' list
         setNbspAfterWords(textNodes);
+        // Set &nbsp before words of 'nbspBeforeWords' list
+        setNbspBeforeWords(textNodes);
         // Set &nbsp around special characters
         for (const node of textNodes) {
             // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
