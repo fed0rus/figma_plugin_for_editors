@@ -193,9 +193,15 @@ function groomText () {
     // Set &nbsp after words of 'nbspAfterWords' list
     setNbspAfterWords(textNodes);
 
-    // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
+    // Set &nbsp around special characters
     for (const node of textNodes) {
-      node.characters = node.characters.replaceAll(/[  ][-—)][ ]/g, ' — ');
+
+      // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
+      node.characters = node.characters.replaceAll(/[  ][-—][ ]/g, ' — ');
+
+      // Add nbsp after '№' sign
+      node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
+      node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
     }
 
     // Show that plugin ran successfully
