@@ -193,6 +193,16 @@ function groomText() {
             // Add nbsp after '№' sign
             node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
             node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
+            // Add nbsp after numbers
+            const regexOfSpacedAroundNumbers = /[\ | ]?[0-9]+[,;)]?\ /g;
+            const matchedNumbers = node.characters.match(regexOfSpacedAroundNumbers);
+            if (matchedNumbers != null) {
+                for (const matchedNumber of matchedNumbers) {
+                    // Change last space to nbsp
+                    const replacement = matchedNumber.slice(0, -1) + ' ';
+                    node.characters = node.characters.replace(matchedNumber, replacement);
+                }
+            }
         }
         // Show that plugin ran successfully
         figma.notify('Причесано');
