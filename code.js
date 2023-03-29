@@ -144,22 +144,23 @@ async function loadFontsForTextNodes(textNodes) {
             .map(figma.loadFontAsync));
     }
 }
-function setNbspAfterWords(textNodes) {
-    for (const node of textNodes) {
-        // Prepare words of TextLayer and final string
-        var finalString = '';
-        var splitWords = node.characters.split(/ +/);
-        // Handle every word in TextLayer
-        for (const rawWord of splitWords) {
-            // Remove ',' and ';' from the word
-            var cleanWord = rawWord.replace(/[,;]/g, '');
-            // Add the word to the final string. If it's in a set, add &nbsp, otherwise a regular space
-            finalString += rawWord + ((nbspAfterWords.has(cleanWord.toLowerCase()) ? ' ' : ' '));
-        }
-        // Replace initial text with modified. Also, remove spaces around string
-        node.characters = finalString.trim();
-    }
-}
+// OLD FUNCTION B4 IN-PLACE OPTIMIZATION. DELETE AFTER THE OPTIMIZATION
+// function setNbspAfterWords (textNodes: Array<TextNode>) {
+//   for (const node of textNodes) {
+//     // Prepare words of TextLayer and final string
+//     var finalString = '';
+//     var splitWords = node.characters.split(/ +/);
+//     // Handle every word in TextLayer
+//     for (const rawWord of splitWords) {
+//       // Remove ',' and ';' from the word
+//       var cleanWord = rawWord.replace(/[,;]/g, '');
+//       // Add the word to the final string. If it's in a set, add &nbsp, otherwise a regular space
+//       finalString += rawWord + ((nbspAfterWords.has(cleanWord.toLowerCase()) ? ' ' : ' '));
+//     }
+//     // Replace initial text with modified. Also, remove spaces around string
+//     node.characters = finalString.trim();
+//   }
+// }
 function setNbspBeforeWords(textNodes) {
     for (const node of textNodes) {
         // Prepare words of TextLayer and final string
@@ -176,32 +177,51 @@ function setNbspBeforeWords(textNodes) {
         node.characters = finalString.trim();
     }
 }
-async function replaceSpacesAfterWords(textNode, wordRegex) {
-    const characters = textNode.characters;
+// TODO: CODE FROM GPT, DELETE LATER
+// async function replaceSpacesAfterWords(textNode: TextNode, wordRegex: RegExp) {
+//   var characters = textNode.characters;
+//   let match;
+//   let replacedCharacters = '';
+//   while ((match = wordRegex.exec(characters)) !== null) {
+//     const wordEndIndex = match.index + match[0].length;
+//     const nextCharacter = characters.charAt(wordEndIndex);
+//     const spaceRegex = /\s/;
+//     if (spaceRegex.test(nextCharacter)) {
+//       replacedCharacters += characters.substring(0, wordEndIndex);
+//       replacedCharacters += '&nbsp;';
+//       characters = characters.substring(wordEndIndex + 1);
+//       wordRegex.lastIndex = 0;
+//     } else {
+//       replacedCharacters += characters.substring(0, wordEndIndex);
+//       characters = characters.substring(wordEndIndex);
+//       wordRegex.lastIndex = wordEndIndex;
+//     }
+//   }
+//   replacedCharacters += characters;
+//   await textNode.setRangeFills(0, characters.length, textNode.getRangeFills(0, characters.length));
+//   await textNode.insertCharacters(0, replacedCharacters);
+// }
+function replaceSpacesAfterWords(textNode, wordRegex) {
+    var characters = textNode.characters;
     let match;
-    let replacedCharacters = '';
     while ((match = wordRegex.exec(characters)) !== null) {
-        const wordEndIndex = match.index + match[0].length;
-        const nextCharacter = characters.charAt(wordEndIndex);
-        const spaceRegex = /\s/;
-        if (spaceRegex.test(nextCharacter)) {
-            replacedCharacters += characters.substring(0, wordEndIndex);
-            replacedCharacters += '&nbsp;';
-            characters = characters.substring(wordEndIndex + 1);
-            wordRegex.lastIndex = 0;
-        }
-        else {
-            replacedCharacters += characters.substring(0, wordEndIndex);
-            characters = characters.substring(wordEndIndex);
-            wordRegex.lastIndex = wordEndIndex;
-        }
+        console.log(match);
+        textNode.insertCharacters(wordRegex.lastIndex + 1, '\u00a0', 'BEFORE');
+        textNode.deleteCharacters(wordRegex.lastIndex, wordRegex.lastIndex + 1);
+        // if (spaceRegex.test(nextCharacter)) {
+        //   characters = characters.substring(wordEndIndex + 1);
+        //   wordRegex.lastIndex = 0;
+        // } else {
+        //   characters = characters.substring(wordEndIndex);
+        //   wordRegex.lastIndex = wordEndIndex;
+        // }
     }
-    replacedCharacters += characters;
-    await textNode.setRangeFills(0, characters.length, textNode.getRangeFills(0, characters.length));
-    await textNode.insertCharacters(0, replacedCharacters);
 }
 function setNbspAfterWordsNew(textNodes) {
-    const wordRegex = new RegExp(`(${nbspAfterWords.join('|')})`, 'gi');
+    // TODO: build a proper regex
+    console.log(nbspAfterWords.join('\ |'));
+    const wordRegex = new RegExp(`(${nbspAfterWords.join('\ |')})`, 'gi');
+    // const wordRegex = new RegExp(`в`, 'gi');
     for (const node of textNodes) {
         replaceSpacesAfterWords(node, wordRegex);
     }
