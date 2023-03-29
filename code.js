@@ -89,8 +89,8 @@ const groupShortWords = new Set([
     'чек',
     'щит',
 ]);
-// Assemble all word groups, that need &nbsp after them, into one set
-const nbspAfterWords = new Set([
+// Assemble all word groups, that need &nbsp after them, into one array
+const nbspAfterWords = Array.from(new Set([
     ...groupPrepositions,
     ...groupConjunctions,
     ...groupPronouns,
@@ -98,7 +98,7 @@ const nbspAfterWords = new Set([
     ...groupAdverbs,
     ...groupNumerals,
     ...groupShortWords,
-]);
+]));
 // Word groups that need &nbsp before them
 const groupParticles = new Set([
     'бы',
@@ -176,38 +176,70 @@ function setNbspBeforeWords(textNodes) {
         node.characters = finalString.trim();
     }
 }
+async function replaceSpacesAfterWords(textNode, wordRegex) {
+    const characters = textNode.characters;
+    let match;
+    let replacedCharacters = '';
+    while ((match = wordRegex.exec(characters)) !== null) {
+        const wordEndIndex = match.index + match[0].length;
+        const nextCharacter = characters.charAt(wordEndIndex);
+        const spaceRegex = /\s/;
+        if (spaceRegex.test(nextCharacter)) {
+            replacedCharacters += characters.substring(0, wordEndIndex);
+            replacedCharacters += '&nbsp;';
+            characters = characters.substring(wordEndIndex + 1);
+            wordRegex.lastIndex = 0;
+        }
+        else {
+            replacedCharacters += characters.substring(0, wordEndIndex);
+            characters = characters.substring(wordEndIndex);
+            wordRegex.lastIndex = wordEndIndex;
+        }
+    }
+    replacedCharacters += characters;
+    await textNode.setRangeFills(0, characters.length, textNode.getRangeFills(0, characters.length));
+    await textNode.insertCharacters(0, replacedCharacters);
+}
+function setNbspAfterWordsNew(textNodes) {
+    const wordRegex = new RegExp(`(${nbspAfterWords.join('|')})`, 'gi');
+    for (const node of textNodes) {
+        replaceSpacesAfterWords(node, wordRegex);
+    }
+}
 // Main function that will groom text
 function groomText() {
     // Get a list of operable text nodes
     const textNodes = getOperableTextNodes();
     // Load fonts for the text nodes. Inside do whatever grooming you want
     loadFontsForTextNodes(textNodes).then(() => {
+        // DUBUG CODE
+        setNbspAfterWordsNew(textNodes);
+        // PRODUCTION CODE
+        // TODO: UNCOMMENT AFTER DEBUG
         // Set &nbsp after words of 'nbspAfterWords' list
-        setNbspAfterWords(textNodes);
-        // Set &nbsp before words of 'nbspBeforeWords' list
-        setNbspBeforeWords(textNodes);
-        // Set &nbsp around special characters
-        for (const node of textNodes) {
-            // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
-            node.characters = node.characters.replaceAll(/[  ][-—][ ]/g, ' — ');
-            // Add nbsp after '№' sign
-            node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
-            node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
-            // Add nbsp after numbers
-            const regexOfSpacedAroundNumbers = /[\ | ]?[0-9]+[,;)]?\ /g;
-            const matchedNumbers = node.characters.match(regexOfSpacedAroundNumbers);
-            if (matchedNumbers != null) {
-                for (const matchedNumber of matchedNumbers) {
-                    // Change last space to nbsp
-                    const replacement = matchedNumber.slice(0, -1) + ' ';
-                    node.characters = node.characters.replace(matchedNumber, replacement);
-                }
-            }
-        }
-        // Show that plugin ran successfully
-        figma.notify('Причесано');
-        // Close plugin
-        figma.closePlugin();
+        // setNbspAfterWords(textNodes);
+        // // Set &nbsp before words of 'nbspBeforeWords' list
+        // setNbspBeforeWords(textNodes);
+        // // Set &nbsp around special characters
+        // for (const node of textNodes) {
+        //   // Replace all single hyphens with em-dashes. Also, add nbsp before em-dashes
+        //   node.characters = node.characters.replaceAll(/[  ][-—][ ]/g, ' — ');
+        //   // Add nbsp after '№' sign
+        //   node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
+        //   node.characters = node.characters.replaceAll(/[ ][№][ ]/g, ' № ');
+        //   // Add nbsp after numbers
+        //   const regexOfSpacedAroundNumbers = /[\ | ]?[0-9]+[,;)]?\ /g;
+        //   const matchedNumbers = node.characters.match(regexOfSpacedAroundNumbers);
+        //   if (matchedNumbers != null) {
+        //     for (const matchedNumber of matchedNumbers) {
+        //       // Change last space to nbsp
+        //       const replacement = matchedNumber.slice(0, -1) + ' ';
+        //       node.characters = node.characters.replace(matchedNumber, replacement);
+        //     }
+        //   }
+        // }
+        // Close plugin and show message that it ran successfully
+        figma.closePlugin('✅ Причесано');
     });
 }
 // Main call
