@@ -233,14 +233,20 @@ function setNbspBeforeWords (textNodes: Array<TextNode>) {
 // }
 
 
-function replaceSpacesAfterWords(textNode: TextNode, wordRegex: RegExp) {
-  var characters = textNode.characters;
-  let match;
+function replaceSpacesAfterWords(textNode: TextNode, regexNbspAfterWords: RegExp) {
 
-  while ((match = wordRegex.exec(characters)) !== null) {
-    console.log(match);
-    textNode.insertCharacters(wordRegex.lastIndex + 1, '\u00a0', 'BEFORE');
-    textNode.deleteCharacters(wordRegex.lastIndex, wordRegex.lastIndex + 1);
+  const matches = textNode.characters.matchAll(regexNbspAfterWords);
+  
+  for (const match of matches) {
+    console.log(`Found ${match[0]} start=${match.index}.`);
+  }
+
+  // let match;
+
+  // while ((match = wordRegex.exec(characters)) !== null) {
+  //   console.log(match);
+  //   textNode.insertCharacters(wordRegex.lastIndex + 1, '\u00a0', 'BEFORE');
+  //   textNode.deleteCharacters(wordRegex.lastIndex, wordRegex.lastIndex + 1);
 
     // if (spaceRegex.test(nextCharacter)) {
       
@@ -250,19 +256,17 @@ function replaceSpacesAfterWords(textNode: TextNode, wordRegex: RegExp) {
     //   characters = characters.substring(wordEndIndex);
     //   wordRegex.lastIndex = wordEndIndex;
     // }
-  }
+  // }
 }
 
 
 function setNbspAfterWordsNew (textNodes: Array<TextNode>) {
 
-  // TODO: build a proper regex
-  console.log(nbspAfterWords.join('\ |'));
-  const wordRegex = new RegExp(`(${nbspAfterWords.join('\ |')})`, 'gi');
-  // const wordRegex = new RegExp(`в`, 'gi');
-  
+
+  const regexNbspAfterSymbolGroups = new RegExp(`(\s|&nbsp;)((${nbspAfterWords.join('|')})|(\d+)|(№))(\s)`, 'gid');
+
   for (const node of textNodes) {
-    replaceSpacesAfterWords(node, wordRegex);
+    replaceSpacesAfterWords(node, regexNbspAfterSymbolGroups);
   }
 }
 

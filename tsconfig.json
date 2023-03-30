@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "module": "ES2022",
+    "module": "ESNext",
     "target": "ESNext",
     "lib": [
-      "es6",
-      "ES2021.String"
+      "ESNext",
     ],
     "strict": true,
     "typeRoots": [
