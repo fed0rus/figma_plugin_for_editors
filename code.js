@@ -110,7 +110,7 @@ const groupParticles = new Set([
     'ли',
     'же',
 ]);
-// Assemble all word groups, that need &nbsp before them, into one set
+// Assemble all word groups, that need &nbsp before them, into one array
 const nbspBeforeWords = Array.from(new Set([
     ...groupParticles,
 ]));
