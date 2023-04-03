@@ -165,14 +165,14 @@ function replaceSpacesAfterWords(node) {
 // Replaces regular spaces after certain words, numbers and symbols with nbsp
 function replaceSpacesBeforeWords(node) {
     // Regex that matches words from list and em dashes
-    const regexNbspAfterSymbolGroups = new RegExp(`[\\s](?=(${nbspBeforeWords.join('|')}|${emDash}))`, 'gi');
+    const regexNbspBeforeSymbolGroups = new RegExp(`[\\s](?=(${nbspBeforeWords.join('|')}|${emDash}))`, 'gi');
     // Some food for regex executer
     const text = node.characters;
     let regexBufferArray;
     // Find words (feed regex) and replace all regular spaces before them with nbsp
-    while ((regexBufferArray = regexNbspAfterSymbolGroups.exec(text)) !== null) {
-        node.insertCharacters(regexNbspAfterSymbolGroups.lastIndex, nbsp, "BEFORE");
-        node.deleteCharacters(regexNbspAfterSymbolGroups.lastIndex - 1, regexNbspAfterSymbolGroups.lastIndex);
+    while ((regexBufferArray = regexNbspBeforeSymbolGroups.exec(text)) !== null) {
+        node.insertCharacters(regexNbspBeforeSymbolGroups.lastIndex, nbsp, "BEFORE");
+        node.deleteCharacters(regexNbspBeforeSymbolGroups.lastIndex - 1, regexNbspBeforeSymbolGroups.lastIndex);
     }
 }
 // Replaces hyphens '-' with em dashes '—'
