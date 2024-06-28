@@ -122,21 +122,21 @@ function getOperableTextNodes() {
     // This set contains node types that support nested search. Check the "Supported on" section of https://www.figma.com/plugin-docs/api/properties/nodes-findallwithcriteria
     const nestedSearchSupportedTypes = new Set(["BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET", "FRAME", "GROUP", "INSTANCE", "SECTION"]);
     const selectedNodes = figma.currentPage.selection;
-    var selectedTextNodesProbablyInvisible = new Array();
+    let selectedTextNodesProbablyInvisible = new Array();
     // Find all nested text layers of the current selection and add them to 'selectedTextNodesProbablyInvisible'
     for (const node of selectedNodes) {
         if (node.type == 'TEXT') {
             selectedTextNodesProbablyInvisible.push(node);
         }
         else if (nestedSearchSupportedTypes.has(node.type)) {
-            // @ts-ignore because we already ensured 'node' has narrowed down to one of types that has method 'findAllWithCriteria'
+            // @ts-expect-error because we already ensured 'node' has narrowed down to one of types that has method 'findAllWithCriteria'
             selectedTextNodesProbablyInvisible = selectedTextNodesProbablyInvisible.concat(node.findAllWithCriteria({
                 types: ['TEXT']
             }));
         }
     }
     // Leave only visible and editable text nodes
-    var selectedTextNodesVisible = new Array();
+    const selectedTextNodesVisible = new Array();
     for (const node of selectedTextNodesProbablyInvisible) {
         if (node.visible && !(node.hasMissingFont)) {
             selectedTextNodesVisible.push(node);
@@ -160,6 +160,7 @@ function replaceSpacesAfterWords(node) {
     const text = node.characters;
     let regexBufferArray;
     // Find words (feed regex) and replace all regular spaces after them with nbsp
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     while ((regexBufferArray = regexNbspAfterSymbolGroups.exec(text)) !== null) {
         node.insertCharacters(regexNbspAfterSymbolGroups.lastIndex + 1, nbsp, "BEFORE");
         node.deleteCharacters(regexNbspAfterSymbolGroups.lastIndex, regexNbspAfterSymbolGroups.lastIndex + 1);
@@ -173,6 +174,7 @@ function replaceSpacesBeforeWords(node) {
     const text = node.characters;
     let regexBufferArray;
     // Find words (feed regex) and replace all regular spaces before them with nbsp
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     while ((regexBufferArray = regexNbspBeforeSymbolGroups.exec(text)) !== null) {
         node.insertCharacters(regexNbspBeforeSymbolGroups.lastIndex, nbsp, "BEFORE");
         node.deleteCharacters(regexNbspBeforeSymbolGroups.lastIndex - 1, regexNbspBeforeSymbolGroups.lastIndex);
@@ -186,6 +188,7 @@ function replaceHyphensWithEmDashes(node) {
     const text = node.characters;
     let regexBufferArray;
     // Find words (feed regex) and replace all regular spaces before them with nbsp
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     while ((regexBufferArray = regexHyphen.exec(text)) !== null) {
         node.insertCharacters(regexHyphen.lastIndex, emDash, "BEFORE");
         node.deleteCharacters(regexHyphen.lastIndex - 1, regexHyphen.lastIndex);
