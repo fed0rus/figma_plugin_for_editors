@@ -1,7 +1,7 @@
 {
   "name": "-",
   "version": "1.0.0",
-  "description": "Your Figma Plugin",
+  "description": "Plugin for UX editors to groom texts in Russian before developer handoff.",
   "main": "code.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
