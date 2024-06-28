@@ -2,10 +2,10 @@
   "name": "Расческа",
   "id": "1208197848976092561",
   "api": "1.0.0",
+  "editorType": ["figma"],
   "main": "code.js",
   "documentAccess": "dynamic-page",
-  "editorType": [
-    "figma"
-  ]
-  
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
 }
