@@ -1,6 +1,7 @@
 // Character constants
 const nbsp = String.fromCharCode(160);
 const hyphen = String.fromCharCode(45);
+const nonBreakingHyphen = String.fromCharCode(8209);
 const emDash = String.fromCharCode(8212);
 const numberSign = String.fromCharCode(8470);
 
@@ -204,20 +205,38 @@ function replaceSpacesBeforeWords (node: TextNode) {
   }
 }
 
-// Replaces hyphens '-' with em dashes '—'
-function replaceHyphensWithEmDashes (node: TextNode) {
+// Replaces lonely hyphens '-' (which have spaces around them, ex. 'Lana - good daughter') with em dashes '—'
+function replaceLonelyHyphensWithEmDashes (node: TextNode) {
 
-  // Regex that matches hyphens
-  const regexHyphen = new RegExp(`[\\s|${nbsp}]${hyphen}(?=[\\s|${nbsp}])`, 'g');
+  // Regex that matches lonely hyphens
+  const regexLonelyHyphen = new RegExp(`[\\s|${nbsp}]${hyphen}(?=[\\s|${nbsp}])`, 'g');
 
   // Some food for regex executer
   const text = node.characters;
   let regexBufferArray;
 
-  // Find words (feed regex) and replace all regular spaces before them with nbsp
+  // Find words (feed regex) and replace lonely hyphens with em dashes
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  while ((regexBufferArray = regexLonelyHyphen.exec(text)) !== null) {
+    node.insertCharacters(regexLonelyHyphen.lastIndex, emDash, "BEFORE");
+    node.deleteCharacters(regexLonelyHyphen.lastIndex - 1, regexLonelyHyphen.lastIndex);
+  }
+}
+
+// Replaces hyphens '-' inside words (non-space characters around them, ex. 'T-Bank') with non-breaking hyphens '‑'
+function replaceHyphensWithNonBreakingHyphens (node: TextNode) {
+
+  // Regex that matches hyphens
+  const regexHyphen = new RegExp(`(?<![\\s|${nbsp}])${hyphen}(?![\\s|${nbsp}])`, 'g');
+
+  // Some food for regex executer
+  const text = node.characters;
+  let regexBufferArray;
+
+  // Find words (feed regex) and replace surrounded by symbols hyphens with non-breaking hyphens
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   while ((regexBufferArray = regexHyphen.exec(text)) !== null) {
-    node.insertCharacters(regexHyphen.lastIndex, emDash, "BEFORE");
+    node.insertCharacters(regexHyphen.lastIndex, nonBreakingHyphen, "BEFORE");
     node.deleteCharacters(regexHyphen.lastIndex - 1, regexHyphen.lastIndex);
   }
 }
@@ -236,8 +255,11 @@ function groomText () {
     // Apply grooming functions to each node
     for (const node of textNodes) {
 
-      // Replace hyphens with em dashes
-      replaceHyphensWithEmDashes(node);
+      // Replace lonely hyphens with em dashes
+      replaceLonelyHyphensWithEmDashes(node);
+
+      // Replace hyphens with non-breaking hyphens
+      replaceHyphensWithNonBreakingHyphens(node);
 
       // Set nbsp after words and symbols
       replaceSpacesAfterWords(node);
