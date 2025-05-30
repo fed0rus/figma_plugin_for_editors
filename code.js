@@ -227,7 +227,7 @@ function groomText() {
             replaceSpacesBeforeWords(node);
         }
         // Close plugin and show message that it ran successfully
-        figma.closePlugin('✅ Причесано');
+        figma.closePlugin('✅ Причесано. Сказать спасибо tinyurl.com/fed0rus');
     });
 }
 // Main call
