@@ -269,7 +269,7 @@ function groomText () {
     }
 
     // Close plugin and show message that it ran successfully
-    figma.closePlugin('✅ Причесано. Сказать спасибо tinyurl.com/fed0rus');
+    figma.closePlugin('✅ Причесано');
   })
 }
 
