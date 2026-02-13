@@ -53,6 +53,7 @@ const groupPronouns = new Set([
     'все',
     'его',
     'ее',
+    'её', // ё variant
     'их',
     'мой',
     'наш',
@@ -60,6 +61,7 @@ const groupPronouns = new Set([
     'чей',
     'чья',
     'чье',
+    'чьё', // ё variant
     'это',
 ]);
 const groupNegativeParticles = new Set([
@@ -69,6 +71,7 @@ const groupNegativeParticles = new Set([
 const groupAdverbs = new Set([
     'уже',
     'еще',
+    'ещё', // ё variant
     'как',
     'так',
     'вне',
@@ -98,7 +101,7 @@ const groupShortWords = new Set([
     'чек',
     'щит',
 ]);
-// Assemble all word groups, that need &nbsp after them, into one array
+// Assemble all word groups that need &nbsp after them into one array
 const nbspAfterWords = Array.from(new Set([
     ...groupPrepositions,
     ...groupConjunctions,
@@ -114,120 +117,154 @@ const groupParticles = new Set([
     'ли',
     'же',
 ]);
-// Assemble all word groups, that need &nbsp before them, into one array
+// Assemble all word groups that need &nbsp before them into one array
 const nbspBeforeWords = Array.from(new Set([
     ...groupParticles,
 ]));
-// This function returns a list of text nodes that are in current selection (including nested nodes) and are visible
+// Helper: find all positions where regex matches in a string, return them as an array of indices.
+// We collect first, then replace from end to start — so earlier positions don't shift.
+function collectMatchPositions(regex, text) {
+    const positions = [];
+    while (regex.exec(text) !== null) {
+        positions.push(regex.lastIndex);
+    }
+    return positions;
+}
+// Returns a list of visible, editable text nodes from the current selection (including nested ones)
 function getOperableTextNodes() {
-    // This set contains node types that support nested search. Check the "Supported on" section of https://www.figma.com/plugin-docs/api/properties/nodes-findallwithcriteria
-    const nestedSearchSupportedTypes = new Set(["BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET", "FRAME", "GROUP", "INSTANCE", "SECTION"]);
+    // Node types that support searching inside their children
+    const nestedSearchSupportedTypes = new Set([
+        "BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET",
+        "FRAME", "GROUP", "INSTANCE", "SECTION",
+    ]);
     const selectedNodes = figma.currentPage.selection;
-    let selectedTextNodesProbablyInvisible = new Array();
-    // Find all nested text layers of the current selection and add them to 'selectedTextNodesProbablyInvisible'
+    const allTextNodes = [];
+    // Find all text layers in the selection (including deeply nested ones)
     for (const node of selectedNodes) {
-        if (node.type == 'TEXT') {
-            selectedTextNodesProbablyInvisible.push(node);
+        if (node.type === 'TEXT') {
+            allTextNodes.push(node);
         }
         else if (nestedSearchSupportedTypes.has(node.type)) {
-            // @ts-expect-error because we already ensured 'node' has narrowed down to one of types that has method 'findAllWithCriteria'
-            selectedTextNodesProbablyInvisible = selectedTextNodesProbablyInvisible.concat(node.findAllWithCriteria({
-                types: ['TEXT']
-            }));
+            // @ts-expect-error — we already checked that node.type supports findAllWithCriteria
+            const nested = node.findAllWithCriteria({ types: ['TEXT'] });
+            allTextNodes.push(...nested);
         }
     }
-    // Leave only visible and editable text nodes
-    const selectedTextNodesVisible = new Array();
-    for (const node of selectedTextNodesProbablyInvisible) {
-        if (node.visible && !(node.hasMissingFont)) {
-            selectedTextNodesVisible.push(node);
-        }
-    }
-    // Return operable text nodes
-    return selectedTextNodesVisible;
+    // Keep only visible nodes without missing fonts
+    return allTextNodes.filter(node => node.visible && !node.hasMissingFont);
 }
 // Load fonts so we can change text in TextNodes
 async function loadFontsForTextNodes(textNodes) {
+    // Collect all unique fonts across all nodes, then load each one only once
+    const uniqueFonts = new Map();
     for (const node of textNodes) {
-        await Promise.all(node.getRangeAllFontNames(0, node.characters.length)
-            .map(figma.loadFontAsync));
+        for (const font of node.getRangeAllFontNames(0, node.characters.length)) {
+            const key = `${font.family}::${font.style}`;
+            if (!uniqueFonts.has(key)) {
+                uniqueFonts.set(key, font);
+            }
+        }
     }
+    await Promise.all(Array.from(uniqueFonts.values()).map(figma.loadFontAsync));
 }
 // Replaces regular spaces after certain words, numbers and symbols with nbsp
 function replaceSpacesAfterWords(node) {
     // Regex that matches words from list, numbers and '№' symbol
-    const regexNbspAfterSymbolGroups = new RegExp(`[\\s|${nbsp}](${nbspAfterWords.join('|')}|\\d+|${numberSign})(?=\\s)`, 'gi');
-    // Some food for regex executer
+    // FIX: Removed stray | inside [...] (was matching literal pipe character by accident)
+    const regexNbspAfterSymbolGroups = new RegExp(`[\\s${nbsp}](${nbspAfterWords.join('|')}|\\d+|${numberSign})(?=\\s)`, 'gi');
     const text = node.characters;
-    let regexBufferArray;
+    const positions = collectMatchPositions(regexNbspAfterSymbolGroups, text);
     // Find words (feed regex) and replace all regular spaces after them with nbsp
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    while ((regexBufferArray = regexNbspAfterSymbolGroups.exec(text)) !== null) {
-        node.insertCharacters(regexNbspAfterSymbolGroups.lastIndex + 1, nbsp, "BEFORE");
-        node.deleteCharacters(regexNbspAfterSymbolGroups.lastIndex, regexNbspAfterSymbolGroups.lastIndex + 1);
+    // (replacing from end to start so positions don't shift)
+    for (let i = positions.length - 1; i >= 0; i--) {
+        const pos = positions[i];
+        node.insertCharacters(pos + 1, nbsp, "BEFORE");
+        node.deleteCharacters(pos, pos + 1);
     }
 }
-// Replaces regular spaces after certain words, numbers and symbols with nbsp
+// Replaces regular spaces before certain words and em dashes with nbsp
 function replaceSpacesBeforeWords(node) {
-    // Regex that matches words from list and em dashes
     const regexNbspBeforeSymbolGroups = new RegExp(`[\\s](?=(${nbspBeforeWords.join('|')}|${emDash}))`, 'gi');
-    // Some food for regex executer
     const text = node.characters;
-    let regexBufferArray;
+    const positions = collectMatchPositions(regexNbspBeforeSymbolGroups, text);
     // Find words (feed regex) and replace all regular spaces before them with nbsp
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    while ((regexBufferArray = regexNbspBeforeSymbolGroups.exec(text)) !== null) {
-        node.insertCharacters(regexNbspBeforeSymbolGroups.lastIndex, nbsp, "BEFORE");
-        node.deleteCharacters(regexNbspBeforeSymbolGroups.lastIndex - 1, regexNbspBeforeSymbolGroups.lastIndex);
+    // (replacing from end to start so positions don't shift)
+    for (let i = positions.length - 1; i >= 0; i--) {
+        const pos = positions[i];
+        node.insertCharacters(pos, nbsp, "BEFORE");
+        node.deleteCharacters(pos - 1, pos);
     }
 }
-// Replaces lonely hyphens '-' (which have spaces around them, ex. 'Lana - good daughter') with em dashes '—'
+// Replaces lonely hyphens '-' (spaces around them, e.g. 'Lana - good daughter') with em dashes '—'
 function replaceLonelyHyphensWithEmDashes(node) {
-    // Regex that matches lonely hyphens
-    const regexLonelyHyphen = new RegExp(`[\\s|${nbsp}]${hyphen}(?=[\\s|${nbsp}])`, 'g');
-    // Some food for regex executer
+    // FIX: Removed stray | inside [...]
+    const regexLonelyHyphen = new RegExp(`[\\s${nbsp}]${hyphen}(?=[\\s${nbsp}])`, 'g');
     const text = node.characters;
-    let regexBufferArray;
+    const positions = collectMatchPositions(regexLonelyHyphen, text);
     // Find words (feed regex) and replace lonely hyphens with em dashes
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    while ((regexBufferArray = regexLonelyHyphen.exec(text)) !== null) {
-        node.insertCharacters(regexLonelyHyphen.lastIndex, emDash, "BEFORE");
-        node.deleteCharacters(regexLonelyHyphen.lastIndex - 1, regexLonelyHyphen.lastIndex);
+    // (replacing from end to start so positions don't shift)
+    for (let i = positions.length - 1; i >= 0; i--) {
+        const pos = positions[i];
+        node.insertCharacters(pos, emDash, "BEFORE");
+        node.deleteCharacters(pos - 1, pos);
     }
 }
-// Replaces hyphens '-' inside words (non-space characters around them, ex. 'T-Bank') with non-breaking hyphens '‑'
+// Replaces hyphens '-' inside words (e.g. 'T-Bank') with non-breaking hyphens '‑'
 function replaceHyphensWithNonBreakingHyphens(node) {
-    // Regex that matches hyphens
-    const regexHyphen = new RegExp(`(?<![\\s|${nbsp}])${hyphen}(?![\\s|${nbsp}])`, 'g');
-    // Some food for regex executer
+    // FIX: Removed stray | inside [...]
+    const regexHyphen = new RegExp(`(?<![\\s${nbsp}])${hyphen}(?![\\s${nbsp}])`, 'g');
     const text = node.characters;
-    let regexBufferArray;
+    const positions = collectMatchPositions(regexHyphen, text);
     // Find words (feed regex) and replace surrounded by symbols hyphens with non-breaking hyphens
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    while ((regexBufferArray = regexHyphen.exec(text)) !== null) {
-        node.insertCharacters(regexHyphen.lastIndex, nonBreakingHyphen, "BEFORE");
-        node.deleteCharacters(regexHyphen.lastIndex - 1, regexHyphen.lastIndex);
+    // (replacing from end to start so positions don't shift)
+    for (let i = positions.length - 1; i >= 0; i--) {
+        const pos = positions[i];
+        node.insertCharacters(pos, nonBreakingHyphen, "BEFORE");
+        node.deleteCharacters(pos - 1, pos);
     }
 }
-// Main function that will groom text
+// Main function that grooms text
 function groomText() {
-    // Get a list of operable text nodes
+    const startTime = Date.now();
+    // Makes searching through big files WAY faster (Figma docs recommend this)
+    figma.skipInvisibleInstanceChildren = true;
+    // Get all text nodes we can work with
     const textNodes = getOperableTextNodes();
-    // Load fonts for the text nodes. Inside do whatever grooming you want
+    console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}`);
+    if (textNodes.length === 0) {
+        figma.closePlugin('⚠️ Не найдено текстовых слоёв');
+        return;
+    }
+    // Load fonts, then do all the replacements
     loadFontsForTextNodes(textNodes).then(() => {
-        // Apply grooming functions to each node
+        console.log(`Loading fonts: ${Date.now() - startTime}ms`);
+        let successCount = 0;
+        let errorCount = 0;
         for (const node of textNodes) {
-            // Replace lonely hyphens with em dashes
-            replaceLonelyHyphensWithEmDashes(node);
-            // Replace hyphens with non-breaking hyphens
-            replaceHyphensWithNonBreakingHyphens(node);
-            // Set nbsp after words and symbols
-            replaceSpacesAfterWords(node);
-            // Set nbsp before words and symbols
-            replaceSpacesBeforeWords(node);
+            try {
+                replaceLonelyHyphensWithEmDashes(node);
+                replaceHyphensWithNonBreakingHyphens(node);
+                replaceSpacesAfterWords(node);
+                replaceSpacesBeforeWords(node);
+                successCount++;
+            }
+            catch (err) {
+                // If one text layer fails, skip it and keep going
+                errorCount++;
+                console.error(`Failed to groom node "${node.name}":`, err);
+            }
         }
-        // Close plugin and show message that it ran successfully
-        figma.closePlugin('✅ Причесано');
+        console.log(`Grooming took ${Date.now() - startTime}ms — ${successCount} nodes`);
+        // Tell the user what happened
+        if (errorCount === 0) {
+            figma.closePlugin('✅ Причесано');
+        }
+        else {
+            figma.closePlugin(`⚠️ Причесано ${successCount}, ошибок: ${errorCount}`);
+        }
+    }).catch((err) => {
+        console.error('Font loading failed:', err);
+        figma.closePlugin('❌ Ошибка загрузки шрифтов');
     });
 }
 // Main call
