@@ -137,7 +137,8 @@ function collectMatchPositions(regex: RegExp, text: string): number[] {
 
 
 // Returns a list of visible, editable text nodes from the current selection (including nested ones)
-function getOperableTextNodes(): TextNode[] {
+// Also collects all unique fonts while we're at it, to avoid a second pass later
+function getOperableTextNodesAndFonts(): { textNodes: TextNode[], fonts: FontName[] } {
 
   // Node types that support searching inside their children
   const nestedSearchSupportedTypes = new Set<string>([
@@ -147,6 +148,7 @@ function getOperableTextNodes(): TextNode[] {
 
   const selectedNodes = figma.currentPage.selection;
   const allTextNodes: TextNode[] = [];
+  const uniqueFonts = new Map<string, FontName>();
 
   // Find all text layers in the selection (including deeply nested ones)
   for (const node of selectedNodes) {
@@ -159,26 +161,27 @@ function getOperableTextNodes(): TextNode[] {
     }
   }
 
-  // Keep only visible nodes without missing fonts
-  return allTextNodes.filter(node => node.visible && !node.hasMissingFont);
+  // Keep only visible nodes without missing fonts, and collect their fonts
+  const operableNodes: TextNode[] = [];
+  for (const node of allTextNodes) {
+    if (node.visible && !node.hasMissingFont) {
+      operableNodes.push(node);
+      for (const font of node.getRangeAllFontNames(0, node.characters.length)) {
+        const key = `${font.family}::${font.style}`;
+        if (!uniqueFonts.has(key)) {
+          uniqueFonts.set(key, font);
+        }
+      }
+    }
+  }
+
+  return { textNodes: operableNodes, fonts: Array.from(uniqueFonts.values()) };
 }
 
 
 // Load fonts so we can change text in TextNodes
-async function loadFontsForTextNodes(textNodes: TextNode[]) {
-  // Collect all unique fonts across all nodes, then load each one only once
-  const uniqueFonts = new Map<string, FontName>();
-  for (const node of textNodes) {
-    for (const font of node.getRangeAllFontNames(0, node.characters.length)) {
-      const key = `${font.family}::${font.style}`;
-      if (!uniqueFonts.has(key)) {
-        uniqueFonts.set(key, font);
-      }
-    }
-  }
-  await Promise.all(
-    Array.from(uniqueFonts.values()).map(figma.loadFontAsync)
-  );
+async function loadFonts(fonts: FontName[]) {
+  await Promise.all(fonts.map(figma.loadFontAsync));
 }
 
 
@@ -272,9 +275,9 @@ function groomText() {
   // Makes searching through big files WAY faster (Figma docs recommend this)
   figma.skipInvisibleInstanceChildren = true;
 
-  // Get all text nodes we can work with
-  const textNodes = getOperableTextNodes();
-  console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}`);
+  // Get all text nodes we can work with (and their fonts in one pass)
+  const { textNodes, fonts } = getOperableTextNodesAndFonts();
+  console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}, ${fonts.length} unique fonts`);
 
   if (textNodes.length === 0) {
     figma.closePlugin('⚠️ Не найдено текстовых слоёв');
@@ -282,7 +285,7 @@ function groomText() {
   }
 
   // Load fonts, then do all the replacements
-  loadFontsForTextNodes(textNodes).then(() => {
+  loadFonts(fonts).then(() => {
     console.log(`Loading fonts: ${Date.now() - startTime}ms`);
 
     let successCount = 0;

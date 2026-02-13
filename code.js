@@ -131,7 +131,8 @@ function collectMatchPositions(regex, text) {
     return positions;
 }
 // Returns a list of visible, editable text nodes from the current selection (including nested ones)
-function getOperableTextNodes() {
+// Also collects all unique fonts while we're at it, to avoid a second pass later
+function getOperableTextNodesAndFonts() {
     // Node types that support searching inside their children
     const nestedSearchSupportedTypes = new Set([
         "BOOLEAN_OPERATION", "COMPONENT", "COMPONENT_SET",
@@ -139,6 +140,7 @@ function getOperableTextNodes() {
     ]);
     const selectedNodes = figma.currentPage.selection;
     const allTextNodes = [];
+    const uniqueFonts = new Map();
     // Find all text layers in the selection (including deeply nested ones)
     for (const node of selectedNodes) {
         if (node.type === 'TEXT') {
@@ -150,22 +152,24 @@ function getOperableTextNodes() {
             allTextNodes.push(...nested);
         }
     }
-    // Keep only visible nodes without missing fonts
-    return allTextNodes.filter(node => node.visible && !node.hasMissingFont);
-}
-// Load fonts so we can change text in TextNodes
-async function loadFontsForTextNodes(textNodes) {
-    // Collect all unique fonts across all nodes, then load each one only once
-    const uniqueFonts = new Map();
-    for (const node of textNodes) {
-        for (const font of node.getRangeAllFontNames(0, node.characters.length)) {
-            const key = `${font.family}::${font.style}`;
-            if (!uniqueFonts.has(key)) {
-                uniqueFonts.set(key, font);
+    // Keep only visible nodes without missing fonts, and collect their fonts
+    const operableNodes = [];
+    for (const node of allTextNodes) {
+        if (node.visible && !node.hasMissingFont) {
+            operableNodes.push(node);
+            for (const font of node.getRangeAllFontNames(0, node.characters.length)) {
+                const key = `${font.family}::${font.style}`;
+                if (!uniqueFonts.has(key)) {
+                    uniqueFonts.set(key, font);
+                }
             }
         }
     }
-    await Promise.all(Array.from(uniqueFonts.values()).map(figma.loadFontAsync));
+    return { textNodes: operableNodes, fonts: Array.from(uniqueFonts.values()) };
+}
+// Load fonts so we can change text in TextNodes
+async function loadFonts(fonts) {
+    await Promise.all(fonts.map(figma.loadFontAsync));
 }
 // Replaces regular spaces after certain words, numbers and symbols with nbsp
 function replaceSpacesAfterWords(node) {
@@ -228,15 +232,15 @@ function groomText() {
     const startTime = Date.now();
     // Makes searching through big files WAY faster (Figma docs recommend this)
     figma.skipInvisibleInstanceChildren = true;
-    // Get all text nodes we can work with
-    const textNodes = getOperableTextNodes();
-    console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}`);
+    // Get all text nodes we can work with (and their fonts in one pass)
+    const { textNodes, fonts } = getOperableTextNodesAndFonts();
+    console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}, ${fonts.length} unique fonts`);
     if (textNodes.length === 0) {
         figma.closePlugin('⚠️ Не найдено текстовых слоёв');
         return;
     }
     // Load fonts, then do all the replacements
-    loadFontsForTextNodes(textNodes).then(() => {
+    loadFonts(fonts).then(() => {
         console.log(`Loading fonts: ${Date.now() - startTime}ms`);
         let successCount = 0;
         let errorCount = 0;
