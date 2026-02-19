@@ -125,6 +125,10 @@ const nbspBeforeWords = Array.from(new Set([
 ]));
 
 
+
+
+
+
 // Helper: find all positions where regex matches in a string, return them as an array of indices.
 // We collect first, then replace from end to start — so earlier positions don't shift.
 function collectMatchPositions(regex: RegExp, text: string): number[] {
