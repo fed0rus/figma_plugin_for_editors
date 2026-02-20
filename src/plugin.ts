@@ -84,7 +84,7 @@ async function groomText() {
 
   if (textNodes.length === 0) {
     notification.cancel();
-    figma.closePlugin('⚠️ В выбранной зоне нет текстов');
+    figma.closePlugin('⚠️ Выделите зону с текстами и запустите плагин');
     return;
   }
 

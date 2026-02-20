@@ -6,5 +6,6 @@ await esbuild.build({
   outfile: 'code.js',
   format: 'iife',
   target: 'esnext',
+  charset: 'utf8',
   banner: { js: '/* global figma, console, setTimeout */' },
 });

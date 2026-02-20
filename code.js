@@ -8,99 +8,99 @@
   var emDash = String.fromCharCode(8212);
   var numberSign = String.fromCharCode(8470);
   var groupPrepositions = /* @__PURE__ */ new Set([
-    "\u0432",
-    "\u0431\u0435\u0437",
-    "\u0434\u043E",
-    "\u0434\u043B\u044F",
-    "\u0437\u0430",
-    "\u043E\u0442",
-    "\u0447\u0435\u0440\u0435\u0437",
-    "\u043D\u0430\u0434",
-    "\u043F\u043E",
-    "\u0438\u0437",
-    "\u0438\u0437-\u0437\u0430",
-    "\u0443",
-    "\u043E\u043A\u043E\u043B\u043E",
-    "\u043F\u043E\u0434",
-    "\u043E",
-    "\u043F\u0440\u043E",
-    "\u043D\u0430",
-    "\u043A",
-    "\u043F\u0435\u0440\u0435\u0434",
-    "\u043F\u0440\u0438",
-    "\u0441",
-    "\u0441\u043E",
-    "\u043C\u0435\u0436\u0434\u0443"
+    "в",
+    "без",
+    "до",
+    "для",
+    "за",
+    "от",
+    "через",
+    "над",
+    "по",
+    "из",
+    "из-за",
+    "у",
+    "около",
+    "под",
+    "о",
+    "про",
+    "на",
+    "к",
+    "перед",
+    "при",
+    "с",
+    "со",
+    "между"
   ]);
   var groupConjunctions = /* @__PURE__ */ new Set([
-    "\u0430",
-    "\u0438",
-    "\u043D\u043E",
-    "\u0438\u043B\u0438",
-    "\u0447\u0442\u043E",
-    "\u0447\u0442\u043E\u0431\u044B"
+    "а",
+    "и",
+    "но",
+    "или",
+    "что",
+    "чтобы"
   ]);
   var groupPronouns = /* @__PURE__ */ new Set([
-    "\u044F",
-    "\u0442\u044B",
-    "\u0432\u044B",
-    "\u043C\u044B",
-    "\u0432\u0430\u0441",
-    "\u043D\u0430\u0441",
-    "\u043E\u043D",
-    "\u043E\u043D\u0430",
-    "\u043E\u043D\u043E",
-    "\u043E\u043D\u0438",
-    "\u0432\u0441\u0435",
-    "\u0435\u0433\u043E",
-    "\u0435\u0435",
-    "\u0435\u0451",
-    "\u0438\u0445",
-    "\u043C\u043E\u0439",
-    "\u043D\u0430\u0448",
-    "\u0447\u0435\u043C",
-    "\u0447\u0435\u0439",
-    "\u0447\u044C\u044F",
-    "\u0447\u044C\u0435",
-    "\u0447\u044C\u0451",
-    "\u044D\u0442\u043E"
+    "я",
+    "ты",
+    "вы",
+    "мы",
+    "вас",
+    "нас",
+    "он",
+    "она",
+    "оно",
+    "они",
+    "все",
+    "его",
+    "ее",
+    "её",
+    "их",
+    "мой",
+    "наш",
+    "чем",
+    "чей",
+    "чья",
+    "чье",
+    "чьё",
+    "это"
   ]);
   var groupNegativeParticles = /* @__PURE__ */ new Set([
-    "\u043D\u0435",
-    "\u043D\u0435\u0442"
+    "не",
+    "нет"
   ]);
   var groupAdverbs = /* @__PURE__ */ new Set([
-    "\u0443\u0436\u0435",
-    "\u0435\u0449\u0435",
-    "\u0435\u0449\u0451",
-    "\u043A\u0430\u043A",
-    "\u0442\u0430\u043A",
-    "\u0432\u043D\u0435",
-    "\u0433\u0434\u0435",
-    "\u0442\u0430\u043C",
-    "\u0442\u0443\u0442"
+    "уже",
+    "еще",
+    "ещё",
+    "как",
+    "так",
+    "вне",
+    "где",
+    "там",
+    "тут"
   ]);
   var groupNumerals = /* @__PURE__ */ new Set([
-    "\u043E\u0434\u0438\u043D",
-    "\u0434\u0432\u0430",
-    "\u0442\u0440\u0438",
-    "\u043E\u0431\u0430"
+    "один",
+    "два",
+    "три",
+    "оба"
   ]);
   var groupShortWords = /* @__PURE__ */ new Set([
-    "\u0430\u043A\u0442",
-    "\u0431\u043E\u0442",
-    "\u0432\u0438\u0434",
-    "\u0432\u0435\u0441",
-    "\u0433\u043E\u0434",
-    "\u0434\u043E\u043C",
-    "\u0437\u0430\u043B",
-    "\u0438\u0441\u043A",
-    "\u0438\u043C\u044F",
-    "\u043A\u043E\u0434",
-    "\u043F\u043E\u043B",
-    "\u0440\u044F\u0434",
-    "\u0447\u0435\u043A",
-    "\u0449\u0438\u0442"
+    "акт",
+    "бот",
+    "вид",
+    "вес",
+    "год",
+    "дом",
+    "зал",
+    "иск",
+    "имя",
+    "код",
+    "пол",
+    "ряд",
+    "чек",
+    "щит"
   ]);
   var nbspAfterWords = Array.from(/* @__PURE__ */ new Set([
     ...groupPrepositions,
@@ -112,9 +112,9 @@
     ...groupShortWords
   ]));
   var groupParticles = /* @__PURE__ */ new Set([
-    "\u0431\u044B",
-    "\u043B\u0438",
-    "\u0436\u0435"
+    "бы",
+    "ли",
+    "же"
   ]);
   var nbspBeforeWords = Array.from(/* @__PURE__ */ new Set([
     ...groupParticles
@@ -197,14 +197,14 @@
   }
   async function groomText() {
     const startTime = Date.now();
-    const notification = figma.notify("\u{1F488} \u041F\u0440\u0438\u0447\u0435\u0441\u044B\u0432\u0430\u044E...", { timeout: Infinity });
+    const notification = figma.notify("💈 Причесываю...", { timeout: Infinity });
     await new Promise((resolve) => setTimeout(resolve, 0));
     figma.skipInvisibleInstanceChildren = true;
     const { textNodes, fonts } = getOperableTextNodesAndFonts();
-    console.log(`Finding nodes: ${Date.now() - startTime}ms \u2014 found ${textNodes.length}, ${fonts.length} unique fonts`);
+    console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}, ${fonts.length} unique fonts`);
     if (textNodes.length === 0) {
       notification.cancel();
-      figma.closePlugin("\u26A0\uFE0F \u0412 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u043E\u043D\u0435 \u043D\u0435\u0442 \u0442\u0435\u043A\u0441\u0442\u043E\u0432");
+      figma.closePlugin("⚠️ Выделите зону с текстами и запустите плагин");
       return;
     }
     try {
@@ -224,17 +224,17 @@
           console.error(`Failed to groom node "${node.name}":`, err);
         }
       }
-      console.log(`Grooming took ${Date.now() - startTime}ms \u2014 ${successCount} nodes`);
+      console.log(`Grooming took ${Date.now() - startTime}ms — ${successCount} nodes`);
       notification.cancel();
       if (errorCount === 0) {
-        figma.closePlugin("\u2705 \u041F\u0440\u0438\u0447\u0435\u0441\u0430\u043D\u043E");
+        figma.closePlugin("✅ Причесано");
       } else {
-        figma.closePlugin(`\u26A0\uFE0F \u041F\u0440\u0438\u0447\u0435\u0441\u0430\u043D\u043E ${successCount}, \u043E\u0448\u0438\u0431\u043E\u043A: ${errorCount}`);
+        figma.closePlugin(`⚠️ Причесано ${successCount}, ошибок: ${errorCount}`);
       }
     } catch (err) {
       console.error("Font loading failed:", err);
       notification.cancel();
-      figma.closePlugin("\u274C \u041D\u0435 \u043F\u043E\u043B\u0443\u0447\u0438\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0448\u0440\u0438\u0444\u0442\u044B");
+      figma.closePlugin("❌ Не получилось загрузить шрифты");
     }
   }
   groomText();
