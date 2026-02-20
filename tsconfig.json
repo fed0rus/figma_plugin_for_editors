@@ -2,13 +2,17 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
+    "moduleResolution": "bundler",
     "lib": [
       "ESNext",
     ],
     "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@figma"
     ]
-  }
+  },
+  "include": ["src/**/*.ts", "vitest.config.ts"]
 }
