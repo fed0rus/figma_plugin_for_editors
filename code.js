@@ -1,4 +1,4 @@
-/* global figma, console */
+/* global figma, console, setTimeout */
 "use strict";
 (() => {
   // src/typography.ts
@@ -195,25 +195,29 @@
       node.deleteCharacters(op.deleteStart, op.deleteEnd);
     }
   }
-  function groomText() {
+  async function groomText() {
     const startTime = Date.now();
+    const notification = figma.notify("\u{1F488} \u041F\u0440\u0438\u0447\u0435\u0441\u044B\u0432\u0430\u044E...", { timeout: Infinity });
+    await new Promise((resolve) => setTimeout(resolve, 0));
     figma.skipInvisibleInstanceChildren = true;
     const { textNodes, fonts } = getOperableTextNodesAndFonts();
     console.log(`Finding nodes: ${Date.now() - startTime}ms \u2014 found ${textNodes.length}, ${fonts.length} unique fonts`);
     if (textNodes.length === 0) {
+      notification.cancel();
       figma.closePlugin("\u26A0\uFE0F \u0412 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u043E\u043D\u0435 \u043D\u0435\u0442 \u0442\u0435\u043A\u0441\u0442\u043E\u0432");
       return;
     }
-    loadFonts(fonts).then(() => {
+    try {
+      await loadFonts(fonts);
       console.log(`Loading fonts: ${Date.now() - startTime}ms`);
       let successCount = 0;
       let errorCount = 0;
       for (const node of textNodes) {
         try {
-          applyToNode(node, findLonelyHyphens(node.characters));
-          applyToNode(node, findInWordHyphens(node.characters));
-          applyToNode(node, findNbspAfterWords(node.characters));
-          applyToNode(node, findNbspBeforeWords(node.characters));
+          const text1 = node.characters;
+          applyToNode(node, [...findLonelyHyphens(text1), ...findInWordHyphens(text1)]);
+          const text2 = node.characters;
+          applyToNode(node, [...findNbspAfterWords(text2), ...findNbspBeforeWords(text2)]);
           successCount++;
         } catch (err) {
           errorCount++;
@@ -221,15 +225,17 @@
         }
       }
       console.log(`Grooming took ${Date.now() - startTime}ms \u2014 ${successCount} nodes`);
+      notification.cancel();
       if (errorCount === 0) {
         figma.closePlugin("\u2705 \u041F\u0440\u0438\u0447\u0435\u0441\u0430\u043D\u043E");
       } else {
         figma.closePlugin(`\u26A0\uFE0F \u041F\u0440\u0438\u0447\u0435\u0441\u0430\u043D\u043E ${successCount}, \u043E\u0448\u0438\u0431\u043E\u043A: ${errorCount}`);
       }
-    }).catch((err) => {
+    } catch (err) {
       console.error("Font loading failed:", err);
+      notification.cancel();
       figma.closePlugin("\u274C \u041D\u0435 \u043F\u043E\u043B\u0443\u0447\u0438\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0448\u0440\u0438\u0444\u0442\u044B");
-    });
+    }
   }
   groomText();
 })();

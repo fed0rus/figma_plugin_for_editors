@@ -67,9 +67,13 @@ function applyToNode(node: TextNode, operations: TextOperation[]) {
 
 
 // Main function that grooms text
-function groomText() {
+async function groomText() {
 
   const startTime = Date.now();
+
+  // Show a notification so the user knows the plugin is working
+  const notification = figma.notify('💈 Причесываю...', { timeout: Infinity });
+  await new Promise(resolve => setTimeout(resolve, 0)); // let Figma render the notification
 
   // Makes searching through big files WAY faster (Figma docs recommend this)
   figma.skipInvisibleInstanceChildren = true;
@@ -79,12 +83,14 @@ function groomText() {
   console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}, ${fonts.length} unique fonts`);
 
   if (textNodes.length === 0) {
+    notification.cancel();
     figma.closePlugin('⚠️ В выбранной зоне нет текстов');
     return;
   }
 
-  // Load fonts, then do all the replacements
-  loadFonts(fonts).then(() => {
+  try {
+    // Load fonts so we can modify text
+    await loadFonts(fonts);
     console.log(`Loading fonts: ${Date.now() - startTime}ms`);
 
     let successCount = 0;
@@ -92,10 +98,14 @@ function groomText() {
 
     for (const node of textNodes) {
       try {
-        applyToNode(node, findLonelyHyphens(node.characters));
-        applyToNode(node, findInWordHyphens(node.characters));
-        applyToNode(node, findNbspAfterWords(node.characters));
-        applyToNode(node, findNbspBeforeWords(node.characters));
+        // Phase 1: hyphen transforms (read text once, merge operations)
+        const text1 = node.characters;
+        applyToNode(node, [...findLonelyHyphens(text1), ...findInWordHyphens(text1)]);
+
+        // Phase 2: nbsp transforms (must run after hyphens — needs em dashes to exist)
+        const text2 = node.characters;
+        applyToNode(node, [...findNbspAfterWords(text2), ...findNbspBeforeWords(text2)]);
+
         successCount++;
       } catch (err) {
         // If one text layer fails, skip it and keep going
@@ -107,15 +117,17 @@ function groomText() {
     console.log(`Grooming took ${Date.now() - startTime}ms — ${successCount} nodes`);
 
     // Tell the user what happened
+    notification.cancel();
     if (errorCount === 0) {
       figma.closePlugin('✅ Причесано');
     } else {
       figma.closePlugin(`⚠️ Причесано ${successCount}, ошибок: ${errorCount}`);
     }
-  }).catch((err) => {
+  } catch (err) {
     console.error('Font loading failed:', err);
+    notification.cancel();
     figma.closePlugin('❌ Не получилось загрузить шрифты');
-  });
+  }
 }
 
 // Main call
