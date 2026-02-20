@@ -79,7 +79,7 @@ function groomText() {
   console.log(`Finding nodes: ${Date.now() - startTime}ms — found ${textNodes.length}, ${fonts.length} unique fonts`);
 
   if (textNodes.length === 0) {
-    figma.closePlugin('⚠️ Не найдено текстовых слоёв');
+    figma.closePlugin('⚠️ В выбранной зоне нет текстов');
     return;
   }
 
@@ -114,7 +114,7 @@ function groomText() {
     }
   }).catch((err) => {
     console.error('Font loading failed:', err);
-    figma.closePlugin('❌ Ошибка загрузки шрифтов');
+    figma.closePlugin('❌ Не получилось загрузить шрифты');
   });
 }
 

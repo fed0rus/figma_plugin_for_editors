@@ -53,7 +53,7 @@ const groupPronouns = new Set<string>([
   'все',
   'его',
   'ее',
-  'её',    // ё variant
+  'её',
   'их',
   'мой',
   'наш',
@@ -61,7 +61,7 @@ const groupPronouns = new Set<string>([
   'чей',
   'чья',
   'чье',
-  'чьё',   // ё variant
+  'чьё',
   'это',
 ]);
 const groupNegativeParticles = new Set<string>([
@@ -71,7 +71,7 @@ const groupNegativeParticles = new Set<string>([
 const groupAdverbs = new Set<string>([
   'уже',
   'еще',
-  'ещё',   // ё variant
+  'ещё',
   'как',
   'так',
   'вне',

@@ -5,6 +5,7 @@
   "main": "code.js",
   "scripts": {
     "build": "node esbuild.mjs",
+    "check": "tsc --noEmit && vitest run && node esbuild.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

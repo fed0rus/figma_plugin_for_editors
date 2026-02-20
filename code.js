@@ -55,7 +55,6 @@
     "\u0435\u0433\u043E",
     "\u0435\u0435",
     "\u0435\u0451",
-    // ё variant
     "\u0438\u0445",
     "\u043C\u043E\u0439",
     "\u043D\u0430\u0448",
@@ -64,7 +63,6 @@
     "\u0447\u044C\u044F",
     "\u0447\u044C\u0435",
     "\u0447\u044C\u0451",
-    // ё variant
     "\u044D\u0442\u043E"
   ]);
   var groupNegativeParticles = /* @__PURE__ */ new Set([
@@ -75,7 +73,6 @@
     "\u0443\u0436\u0435",
     "\u0435\u0449\u0435",
     "\u0435\u0449\u0451",
-    // ё variant
     "\u043A\u0430\u043A",
     "\u0442\u0430\u043A",
     "\u0432\u043D\u0435",
@@ -204,7 +201,7 @@
     const { textNodes, fonts } = getOperableTextNodesAndFonts();
     console.log(`Finding nodes: ${Date.now() - startTime}ms \u2014 found ${textNodes.length}, ${fonts.length} unique fonts`);
     if (textNodes.length === 0) {
-      figma.closePlugin("\u26A0\uFE0F \u041D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u0435\u043A\u0441\u0442\u043E\u0432\u044B\u0445 \u0441\u043B\u043E\u0451\u0432");
+      figma.closePlugin("\u26A0\uFE0F \u0412 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0437\u043E\u043D\u0435 \u043D\u0435\u0442 \u0442\u0435\u043A\u0441\u0442\u043E\u0432");
       return;
     }
     loadFonts(fonts).then(() => {
@@ -231,7 +228,7 @@
       }
     }).catch((err) => {
       console.error("Font loading failed:", err);
-      figma.closePlugin("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0448\u0440\u0438\u0444\u0442\u043E\u0432");
+      figma.closePlugin("\u274C \u041D\u0435 \u043F\u043E\u043B\u0443\u0447\u0438\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u0448\u0440\u0438\u0444\u0442\u044B");
     });
   }
   groomText();
