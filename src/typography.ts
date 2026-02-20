@@ -193,12 +193,11 @@ export function applyOperations(text: string, operations: TextOperation[]): stri
 }
 
 
-// Applies all typography transforms in the correct order
+// Applies all typography transforms in the correct order (2 phases)
 export function groomString(text: string): string {
-  let result = text;
-  const transforms = [findLonelyHyphens, findInWordHyphens, findNbspAfterWords, findNbspBeforeWords];
-  for (const findFn of transforms) {
-    result = applyOperations(result, findFn(result));
-  }
+  // Phase 1: hyphen transforms (independent, can be merged)
+  let result = applyOperations(text, [...findLonelyHyphens(text), ...findInWordHyphens(text)]);
+  // Phase 2: nbsp transforms (must run after hyphens — needs em dashes to exist)
+  result = applyOperations(result, [...findNbspAfterWords(result), ...findNbspBeforeWords(result)]);
   return result;
 }
